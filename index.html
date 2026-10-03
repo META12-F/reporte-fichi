@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Reporte de Guardia Ejecutiva - Fiesta Inn</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        :root {
+            --posadas-blue: #003366;
+            --posadas-gold: #D4AF37;
+            --posadas-light: #F3F4F6;
+        }
+        
+        body {
+            background-color: var(--posadas-light);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Estilo Switch Móvil (iOS/Material) */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 52px;
+            height: 28px;
+            flex-shrink: 0;
+        }
+        .switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ef4444; /* Rojo - Falla / No aceptable */
+            transition: .3s;
+            border-radius: 28px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px; width: 22px;
+            left: 3px; bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        input:checked + .slider {
+            background-color: #10b981; /* Verde - Bien / En orden */
+        }
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        /* Animaciones para acordeones */
+        .accordion-content {
+            display: none;
+            transition: all 0.3s ease-in-out;
+        }
+        .accordion-content.open {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .chevron { transition: transform 0.3s ease; }
+        .chevron.rotated { transform: rotate(180deg); }
+
+        /* Loader Overlay */
+        #loader {
+            display: none;
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+<body class="pb-24">
+
+    <header class="bg-[#003366] text-white shadow-xl sticky top-0 z-50 border-b-[3px] border-[#D4AF37]">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTzS5WTYQRUhF2MzP8M7Ae67hWJ5MsE6135z1kQHnHBIFBgIkijDe4Y4zA&s=10" alt="Fiesta Inn Logo" class="h-10 bg-white rounded p-1 object-contain">
+            <div class="text-right">
+                <h1 class="text-[17px] font-bold text-[#D4AF37] leading-tight">Guardia<br>Ejecutiva</h1>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-3 mt-4 max-w-xl">
+        <form id="reportForm" class="space-y-4">
+
+            <div class="bg-white rounded-xl shadow-md border-t-4 border-[#003366] overflow-hidden">
+                <button type="button" class="w-full px-5 py-4 flex justify-between items-center bg-gray-50 focus:outline-none accordion-btn">
+                    <h2 class="text-lg font-bold text-[#003366] flex items-center gap-2">
+                        <span>📝</span> 1. Datos Generales
+                    </h2>
+                    <svg class="w-6 h-6 text-gray-500 chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                
+                <div class="accordion-content px-5 py-4 open"> <!-- Abierto por defecto -->
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Fecha</label>
+                            <input type="date" id="fecha" required class="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D4AF37] outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Ejecutivo a cargo</label>
+                            <input type="text" id="ejecutivo" required value="David Alonso Torres Mendoza" class="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D4AF37] outline-none">
+                        </div>
+                        
+                        <div class="pt-2 border-t">
+                            <h3 class="font-bold text-[#003366] mb-2 text-sm">Comentarios por Departamento</h3>
+                            <div class="space-y-3" id="dept-comments-container">
+                                <!-- Generado por JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md border-t-4 border-[#D4AF37] overflow-hidden">
+                <button type="button" class="w-full px-5 py-4 flex justify-between items-center bg-gray-50 focus:outline-none accordion-btn">
+                    <h2 class="text-lg font-bold text-[#003366] flex items-center gap-2">
+                        <span>🔍</span> 2. Reporte por Áreas
+                    </h2>
+                    <svg class="w-6 h-6 text-gray-500 chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div class="accordion-content">
+                    <img src="https://images.trvl-media.com/lodging/1000000/10000/8000/7987/4d74b8d0.jpg?impolicy=resizecrop&rw=575&rh=575&ra=fill" alt="Áreas Públicas" class="w-full h-32 object-cover">
+                    <div class="p-5">
+                        <p class="text-xs text-center text-gray-500 mb-4 bg-gray-100 p-2 rounded">Verde = En Orden / Limpio | Rojo = Falla / Sucio</p>
+                        <div id="areas-container" class="space-y-3">
+                            <!-- Generado por JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md border-t-4 border-[#003366] overflow-hidden">
+                <button type="button" class="w-full px-5 py-4 flex justify-between items-center bg-gray-50 focus:outline-none accordion-btn">
+                    <h2 class="text-lg font-bold text-[#003366] flex items-center gap-2">
+                        <span>🗣️</span> 3. Entrevistas Huéspedes
+                    </h2>
+                    <svg class="w-6 h-6 text-gray-500 chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div class="accordion-content p-5">
+                    <div id="entrevistas-container" class="space-y-6">
+                        <!-- Generado por JS (3 Entrevistas) -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md border-t-4 border-[#D4AF37] overflow-hidden">
+                <button type="button" class="w-full px-5 py-4 flex justify-between items-center bg-gray-50 focus:outline-none accordion-btn">
+                    <h2 class="text-lg font-bold text-[#003366] flex items-center gap-2">
+                        <span>🍽️</span> 4. Servicio AyB
+                    </h2>
+                    <svg class="w-6 h-6 text-gray-500 chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div class="accordion-content p-5">
+                    <h3 class="font-bold text-gray-700 border-b pb-1 mb-3">Servicio General AyB</h3>
+                    <div id="ayb-container" class="space-y-3 mb-4"></div>
+                    <textarea id="ayb_observaciones" rows="2" placeholder="Observaciones de AyB..." class="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg outline-none text-sm"></textarea>
+                    
+                    <h3 class="font-bold text-gray-700 border-b pb-1 mt-6 mb-3">Comedor de Colaboradores</h3>
+                    <div id="comedor-container" class="space-y-3"></div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md border-t-4 border-[#003366] overflow-hidden">
+                <button type="button" class="w-full px-5 py-4 flex justify-between items-center bg-gray-50 focus:outline-none accordion-btn">
+                    <h2 class="text-lg font-bold text-[#003366] flex items-center gap-2">
+                        <span>🥐</span> 5. Desayuno Buffet
+                    </h2>
+                    <svg class="w-6 h-6 text-gray-500 chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div class="accordion-content p-5">
+                    <div id="buffet-container" class="space-y-3"></div>
+                </div>
+            </div>
+
+            <div class="w-full h-24 bg-cover bg-center rounded-xl shadow-md mt-6 relative overflow-hidden" style="background-image: url('https://images.trvl-media.com/lodging/1000000/10000/8000/7987/73d82ef7.jpg?impolicy=resizecrop&rw=575&rh=575&ra=fill');">
+                <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                    <h2 class="text-white text-xl font-bold tracking-wider">AUDITORÍA HABITACIONES</h2>
+                </div>
+            </div>
+
+            <!-- Contenedor para las 3 habitaciones (Generadas por JS para limpiar HTML) -->
+            <div id="habitaciones-main-container" class="space-y-4"></div>
+
+            <div class="mt-8 mb-4">
+                <button type="submit" class="w-full bg-[#003366] text-white font-bold text-lg py-4 rounded-xl shadow-[0_4px_14px_0_rgba(0,51,102,0.39)] active:scale-95 transition-transform flex justify-center items-center gap-3">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                    Guardar y Enviar Reporte
+                </button>
+            </div>
+        </form>
+    </main>
+
+    <div id="loader" class="fixed inset-0 bg-[#003366] bg-opacity-90 z-[100] flex flex-col items-center justify-center px-4 text-center">
+        <div class="animate-spin rounded-full h-20 w-20 border-t-4 border-b-4 border-[#D4AF37] mb-6"></div>
+        <h2 class="text-white text-2xl font-bold mb-2">Procesando Reporte...</h2>
+        <p class="text-[#D4AF37] text-md font-medium">Generando PDF y enviando correos</p>
+        <p class="text-gray-300 text-sm mt-4 opacity-80">Por favor, no cierres ni recargues la aplicación.</p>
+    </div>
+
+    <script>
+        const URL_APP_SCRIPT = "https://script.google.com/macros/s/AKfycbzI89onRWL-Qt-c3AtIiQd07EgiviymJpj4erDrGudxvVg4AScTQFpcgeZ9RR-kugs6/exec";
+
+        // Arrays de configuración de los checklist
+        const departamentos = ["Generales", "Recepción", "AyB", "Ama de Llaves", "Mantenimiento", "Ventas", "Seguridad", "Quejas"];
+        const areas = ["Motor Lobby", "Estacionamiento", "Recepción", "Mesa B-on", "Restaurante", "Alberca / Plazuela", "Gimnasio", "Pasillos", "Área de Banquetes", "Cocina", "Comedor Colaboradores", "Patio de Maniobras", "Baños", "Lockers"];
+        const ayb = ["Sabor", "Temperatura", "Presentación", "Montaje", "Amabilidad del Mesero", "Labor de venta"];
+        const comedor = ["Producción suficiente", "Temperatura", "Menú completo", "Higiene paredes/techo", "Lavamanos", "Iluminación", "Mesas y Sillas", "Limpieza general"];
+        const buffet = ["Frutas", "Postres", "Lácteos", "Semillas", "Jugos", "Leche", "Cereales", "Pan", "Huevos", "Guisos", "Salsas"];
+        const habitacionesItems = [
+            "Puerta de entrada", "Tope de puerta", "Plano de evacuación", "Cadena/pasador", "Detector de humo", 
+            "Piso", "Plafón", "Paredes", "Aire Acondicionado", "Portaequipaje", "Escritorio", "Silla", 
+            "Cabeceras", "Buró", "Cortinas blackout", "Lámpara escritorio", "Lámpara piso", "Lámpara cabecera", 
+            "Menú Room Service", "Control TV", "Cafetera y tazas", "Sábanas", "Almohadas", "Duvet", 
+            "Protectores colchón", "Rodapié", "Puerta closet", "Ganchos", "Plancha", "Tabla de planchar", 
+            "Puerta baño", "Piso baño", "Techo y rejilla", "Luces WC", "Espejo Vanity", "Lavabo", 
+            "Llaves lavabo", "Toallas cuerpo", "Toallas mano", "Amenidades (Shampoo/Gel)", "Botellas de agua", 
+            "Regadera apariencia", "Alcantarilla", "W.C. funcionamiento", "Chrome Cast"
+        ];
+
+        function crearFilaSwitch(id, label) {
+            return `
+            <div class="flex items-center justify-between bg-white border border-gray-100 p-3 rounded-lg shadow-sm">
+                <span class="text-sm text-gray-700 font-medium w-[70%] leading-tight">${label}</span>
+                <label class="switch">
+                    <input type="checkbox" id="${id}" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>`;
+        }
+
+        // Init Datos Generales (Deptos)
+        const deptContainer = document.getElementById('dept-comments-container');
+        departamentos.forEach((dep, idx) => {
+            deptContainer.innerHTML += `<textarea id="coment_${idx}" rows="2" placeholder="${dep}..." class="w-full p-2 text-sm bg-white border border-gray-200 rounded outline-none focus:border-[#D4AF37]"></textarea>`;
+        });
+
+        // Init Áreas, AyB, Comedor, Buffet
+        const injectSwitches = (arr, prefix, containerId) => {
+            const container = document.getElementById(containerId);
+            arr.forEach((item, index) => {
+                container.innerHTML += crearFilaSwitch(`${prefix}_${index}`, item);
+            });
+        };
+        
+        injectSwitches(areas, 'area', 'areas-container');
+        injectSwitches(ayb, 'ayb', 'ayb-container');
+        injectSwitches(comedor, 'comedor', 'comedor-container');
+        injectSwitches(buffet, 'buffet', 'buffet-container');
+
+        // Init Entrevistas (3 bloques)
+        const entrevistasContainer = document.getElementById('entrevistas-container');
+        for(let i=1; i<=3; i++) {
+            entrevistasContainer.innerHTML += `
+            <div class="bg-gray-50 p-4 rounded border border-gray-200">
+                <h4 class="font-bold text-[#D4AF37] mb-3 border-b border-gray-200 pb-1">Entrevista ${i}</h4>
+                <div class="space-y-3 text-sm">
+                    <input type="text" id="ent_nom_${i}" placeholder="Nombre del Huésped" class="w-full p-2 border rounded">
+                    <div class="flex gap-2">
+                        <input type="text" id="ent_hab_${i}" placeholder="Hab." class="w-1/3 p-2 border rounded">
+                        <input type="text" id="ent_emp_${i}" placeholder="Empresa" class="w-2/3 p-2 border rounded">
+                    </div>
+                    <textarea id="ent_com_${i}" rows="2" placeholder="Comentarios..." class="w-full p-2 border rounded"></textarea>
+                </div>
+            </div>`;
+        }
+
+        const habContainer = document.getElementById('habitaciones-main-container');
+        for (let i = 1; i <= 3; i++) {
+            let switchesHTML = '';
+            habitacionesItems.forEach((item, index) => {
+                switchesHTML += crearFilaSwitch(`hab_${i}_${index}`, item);
+            });
+
+            habContainer.innerHTML += `
+            <div class="bg-white rounded-xl shadow-md border-t-4 border-[#003366] overflow-hidden">
+                <button type="button" class="w-full px-5 py-4 flex justify-between items-center bg-gray-50 focus:outline-none accordion-btn">
+                    <h2 class="text-lg font-bold text-[#003366] flex items-center gap-2">
+                        <span>🛏️</span> Habitación ${i}
+                    </h2>
+                    <svg class="w-6 h-6 text-gray-500 chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div class="accordion-content p-5">
+                    <div class="mb-4">
+                        <label class="block text-sm font-bold text-[#003366] mb-1">Número de Habitación</label>
+                        <input type="number" id="num_hab_${i}" placeholder="Ej. 101" required class="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-lg font-bold text-center focus:ring-2 focus:ring-[#D4AF37] outline-none">
+                    </div>
+                    <p class="text-xs text-center text-gray-500 mb-3 bg-gray-100 p-2 rounded">Verde = Bien | Rojo = No Aceptable</p>
+                    <div class="space-y-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                        ${switchesHTML}
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        // Set default date
+        document.getElementById('fecha').valueAsDate = new Date();
+
+        document.querySelectorAll('.accordion-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                const content = button.nextElementSibling;
+                const chevron = button.querySelector('.chevron');
+                content.classList.toggle('open');
+                chevron.classList.toggle('rotated');
+            });
+        });
+
+        document.getElementById('reportForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            document.getElementById('loader').style.display = 'flex';
+
+            // 1. Recolectar Textos Generales
+            let payload = {
+                fecha: document.getElementById('fecha').value,
+                ejecutivo: document.getElementById('ejecutivo').value,
+                comentarios_generales: document.getElementById('coment_0').value,
+                comentarios_deptos: {},
+                entrevistas: [],
+                areas: {},
+                ayb_general: {},
+                ayb_observaciones: document.getElementById('ayb_observaciones').value,
+                comedor: {},
+                buffet: {},
+                habitaciones: []
+            };
+
+            // Llenar comentarios deptos
+            departamentos.forEach((dep, idx) => {
+                if(idx > 0) payload.comentarios_deptos[dep] = document.getElementById(`coment_${idx}`).value;
+            });
+
+            // 2. Función helper para extraer switches
+            const extraeSwitches = (arr, prefix, targetObj) => {
+                arr.forEach((item, idx) => {
+                    targetObj[item] = document.getElementById(`${prefix}_${idx}`).checked ? "Bien" : "Falla";
+                });
+            };
+
+            extraeSwitches(areas, 'area', payload.areas);
+            extraeSwitches(ayb, 'ayb', payload.ayb_general);
+            extraeSwitches(comedor, 'comedor', payload.comedor);
+            extraeSwitches(buffet, 'buffet', payload.buffet);
+
+            // 3. Entrevistas
+            for(let i=1; i<=3; i++) {
+                payload.entrevistas.push({
+                    nombre: document.getElementById(`ent_nom_${i}`).value,
+                    habitacion: document.getElementById(`ent_hab_${i}`).value,
+                    empresa: document.getElementById(`ent_emp_${i}`).value,
+                    comentarios: document.getElementById(`ent_com_${i}`).value
+                });
+            }
+
+            // 4. Lógica estricta para Habitaciones (Contar Buenos y Array de Malos)
+            for (let i = 1; i <= 3; i++) {
+                let habData = {
+                    numero: document.getElementById(`num_hab_${i}`).value,
+                    buenos: 0,
+                    malos: [],
+                    detalles: {} // Para tener el registro completo en json
+                };
+
+                habitacionesItems.forEach((nombreItem, index) => {
+                    let estado = document.getElementById(`hab_${i}_${index}`).checked;
+                    habData.detalles[nombreItem] = estado ? "Bien" : "Falla";
+                    
+                    if (estado) {
+                        habData.buenos++;
+                    } else {
+                        habData.malos.push(nombreItem);
+                    }
+                });
+                payload.habitaciones.push(habData);
+            }
+
+            // 5. Enviar usando Fetch no-cors
+            try {
+                await fetch(URL_APP_SCRIPT, {
+                    method: 'POST',
+                    mode: 'no-cors', // Fundamental para enviar a Google Script desde cliente sin Auth
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                // Debido al 'no-cors', no podemos leer la respuesta (siempre es opaque). 
+                // Asumimos éxito si la promesa se resolvió sin error de red.
+                setTimeout(() => {
+                    document.getElementById('loader').style.display = 'none';
+                    alert("✅ ¡Reporte enviado exitosamente!\n\nSe ha guardado en Drive y notificado a los involucrados.");
+                    
+                    // Resetear App
+                    document.getElementById('reportForm').reset();
+                    document.getElementById('fecha').valueAsDate = new Date();
+                    document.getElementById('ejecutivo').value = "David Alonso Torres Mendoza";
+                    
+                    // Asegurar que todos los acordeones se cierren excepto el primero
+                    document.querySelectorAll('.accordion-content').forEach((c, idx) => {
+                        if(idx === 0) { c.classList.add('open'); c.previousElementSibling.querySelector('.chevron').classList.add('rotated');}
+                        else { c.classList.remove('open'); c.previousElementSibling.querySelector('.chevron').classList.remove('rotated');}
+                    });
+                    window.scrollTo(0, 0);
+                }, 1500);
+
+            } catch (error) {
+                document.getElementById('loader').style.display = 'none';
+                alert("⚠️ Hubo un error de conexión enviando el reporte. Por favor revisa tu internet e intenta de nuevo.");
+                console.error(error);
+            }
+        });
+    </script>
+</body>
+</html>
