@@ -1,0 +1,20 @@
+{
+  "name": "Reporte de Guardia Ejecutiva",
+  "short_name": "Guardia FICHI",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#002d62",
+  "theme_color": "#002d62",
+  "icons": [
+    {
+      "src": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTzS5WTYQRUhF2MzP8M7Ae67hWJ5MsE6135z1kQHnHBIFBgIkijDe4Y4zA&s=10",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTzS5WTYQRUhF2MzP8M7Ae67hWJ5MsE6135z1kQHnHBIFBgIkijDe4Y4zA&s=10",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
