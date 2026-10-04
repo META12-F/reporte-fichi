@@ -1,19 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <!-- Configuración para App Móvil (No borrar) -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Guardia FICHI">
     <meta name="mobile-web-app-capable" content="yes">
-    
-    <!-- Icono de Fiesta Inn para la pantalla de inicio -->
     <link rel="apple-touch-icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTzS5WTYQRUhF2MzP8M7Ae67hWJ5MsE6135z1kQHnHBIFBgIkijDe4Y4zA&s=10">
     <link rel="icon" sizes="192x192" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTzS5WTYQRUhF2MzP8M7Ae67hWJ5MsE6135z1kQHnHBIFBgIkijDe4Y4zA&s=10">
-    
-    <!-- Conexión del Manifest -->
     <link rel="manifest" href="manifest.json">
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Reporte de Guardia Ejecutiva - Fiesta Inn</title>
@@ -23,19 +17,20 @@
         .posadas-blue { background-color: #002d62; }
         .posadas-text-blue { color: #002d62; }
         .posadas-gold { background-color: #b8974a; }
-        .posadas-text-gold { color: #b8974a; }
         
-        /* Estilo para los interruptores (Toggle) */
         .toggle-checkbox:checked { right: 0; border-color: #ef4444; }
         .toggle-checkbox:checked + .toggle-label { background-color: #ef4444; }
         .toggle-checkbox { right: 0; z-index: 1; border-color: #22c55e; transition: all 0.3s; }
         .toggle-label { background-color: #22c55e; transition: all 0.3s; }
         .estado-texto { font-size: 0.75rem; font-weight: bold; margin-left: 8px; width: 85px;}
+        
+        details > summary { list-style: none; outline: none; }
+        details > summary::-webkit-details-marker { display: none; }
+        details[open] summary ~ * { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="pb-20">
-
-    <!-- Encabezado -->
     <div class="posadas-blue text-white p-4 shadow-md sticky top-0 z-50 flex items-center justify-between border-b-4 border-[#b8974a]">
         <div>
             <h1 class="text-xl font-bold tracking-wider">GUARDIA EJECUTIVA</h1>
@@ -44,192 +39,248 @@
         <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTzS5WTYQRUhF2MzP8M7Ae67hWJ5MsE6135z1kQHnHBIFBgIkijDe4Y4zA&s=10" alt="Logo" class="h-10 rounded-full">
     </div>
 
-    <div class="p-4 max-w-lg mx-auto space-y-6" id="formulario">
-        
-        <!-- Datos Generales -->
+    <div class="p-4 max-w-lg mx-auto space-y-4" id="formulario">
+        <!-- SECCIÓN 1: DATOS GENERALES -->
         <div class="bg-white p-5 rounded-lg shadow border-t-4 border-[#002d62]">
             <h2 class="text-lg font-bold posadas-text-blue mb-4">Datos Generales</h2>
             <div class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Fecha</label>
-                    <input type="date" id="fecha" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-[#002d62] focus:ring focus:ring-[#002d62] focus:ring-opacity-50">
+                    <input type="date" id="fecha" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-[#002d62]">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Ejecutivo a Cargo</label>
-                    <input type="text" id="ejecutivo" placeholder="Nombre completo" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                    <input type="text" id="ejecutivo" value="David Alonso Torres Mendoza" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border font-bold text-[#002d62]">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Comentarios Generales</label>
-                    <textarea id="comentarios" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border" placeholder="Inicio de la guardia, ocupación, llegadas esperadas..."></textarea>
+                    <label class="block text-sm font-medium text-gray-700">Resumen General</label>
+                    <textarea id="comentarios" rows="2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border" placeholder="Ocupación, llegadas esperadas..."></textarea>
                 </div>
             </div>
         </div>
 
-        <!-- Contenedor donde se inyectarán las Habitaciones mediante JS -->
-        <div id="habitaciones-container" class="space-y-6"></div>
+        <!-- CONTENEDORES DINÁMICOS PARA LAS DEMÁS PESTAÑAS -->
+        <div id="comentarios-deptos-container"></div>
+        <div id="areas-container"></div>
+        <div id="entrevistas-container"></div>
+        <div id="ayb-container"></div>
+        <div id="comedor-container"></div>
+        <div id="habitaciones-container"></div>
 
-        <!-- Botón Enviar -->
-        <button onclick="enviarDatos()" id="btnEnviar" class="w-full posadas-blue text-white font-bold py-4 px-4 rounded-lg shadow-lg text-lg flex justify-center items-center gap-2 active:bg-blue-900 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
+        <button onclick="enviarDatos()" id="btnEnviar" class="w-full posadas-blue text-white font-bold py-4 px-4 rounded-lg shadow-lg text-lg flex justify-center items-center gap-2 mt-6 active:bg-blue-900 transition-colors">
             Guardar y Enviar Reporte
         </button>
-        
         <p id="mensaje-status" class="text-center font-bold mt-2 text-sm hidden"></p>
-
     </div>
 
     <script>
-        // ESTRUCTURA COMPLETA DE INSPECCIÓN DE HABITACIONES BASADA EN LA IMAGEN DE EXCEL
-        const categoriasHabitacion = {
-            "Habitación": ["Puerta de entrada (con mirilla y chapa)", "Tope de puerta", "Plano de evacuación", "Cadena / pasador seguro", "Detector de humo", "Piso", "Plafón", "Paredes", "Equipo Aire Acondicionado", "Puerta comunicada (con seguro y tope)"],
-            "Muebles habitación": ["Portaequipaje y cajones", "Escritorio", "Silla", "Cabeceras", "Buró", "Cortinas frescura y blackout"],
-            "Iluminación habitación": ["Lámpara escritorio", "Lámpara de piso", "Lámpara de cabecera (2) habs sk y sd"],
-            "Suministros habitación escritorio / buró": ["Guía de canales revisar en la TV", "Reglamento limpio y en buen estado", "Menú Room Service y Bebidas", "Control de TV sobre buró", "Candado de privacidad colgado en tope", "Cafetera con pods y complementos (charola negra)"],
-            "Blancos de habitación": ["Sábanas (2 por cama)", "Almohadas (4 por cama doble y 4 por king)", "Duvet y/o edredón", "Protectores colchón", "Rodapié bien colocado"],
-            "Closet": ["Puerta", "Caja de seguridad", "Barra para ganchos ropa", "Ganchos (6 sin pinzas y 2 con pinzas)", "Lista de Lavandería", "Bolsa Lavandería en el último gancho", "Plancha", "Tabla de planchar"],
-            "Baño y Vanity": ["Puerta (con chapa y seguro) / Espejo", "Tope de puerta", "Piso", "Techo y rejilla", "Luces wc y regadera", "Espejo Vanity", "Lavabo (apariencia)", "Llaves y tapón de lavabo", "Toalleros vanity y regadera"],
-            "Blancos de baño": ["Toallas faciales 1 (socios VRP+)", "Toallas baño cuerpo entero", "Toallas mano 2"],
-            "Amenidades": ["Shampoo y Gel de baño en regadera (mín. 50%)", "Gel y crema en vanity (mín. 50%)", "Kit (toalla, rastrillo, pasta, cepillo, etc.)", "Botellas agua cortesía (según tipo hab)", "Secadora en bolsa de tela y/o empotrada"],
-            "Suministros de baño": ["Papel sanitario (2 rollos) en portarollo", "Kleenex (en portakleenex)", "Vasos vidrio (2)"],
-            "Regadera": ["Apariencia regadera", "Alcantarilla (libre de cabellos)", "Monomando", "Tapete baño (limpio) sobre sardinel", "Barra de seguridad", "Cortina / puerta"],
-            "W.C.": ["Apariencia", "Funcionamiento"],
-            "Equipos de la habitación": ["Chrome Cast (pegado atrás de TV)", "Microondas (opcional limpio)", "Frigobar (opcional limpio)"]
+        // --- 1. ESTRUCTURAS DE DATOS (Basadas en tu Excel) ---
+        
+        const departamentos = ["Recepción / Concierge", "Alimentos y Bebidas", "Ama de Llaves", "Mantenimiento", "Ventas / Banquetes", "Principales quejas de huéspedes", "Seguridad (Candados, Elementos)"];
+        
+        const areas = ["Area Entrada (Motor Lobby)", "Estacionamiento y Jardines", "Areas Publicas Recepción", "Mesa B-ON, PC y Salas", "Restaurante", "Alberca / Plazuela", "Gimnasio", "Pasillos Habs", "Area de Banquetes", "Area de Cocina", "Comedor Colaboradores", "Acceso Proveedores", "Baños Colaboradores", "Back Colaboradores / Lockers"];
+        
+        const itemsAyB = ["Entrada", "Plato Fuerte (30 min)", "Bebidas", "Café o Té", "Disponibilidad en cocina"];
+        const meseroAyB = ["Saludo Posadas (Mano en corazón)", "Labor de venta", "¿Ofrece o sugiere bebidas?", "¿Ofrece o sugiere entradas y sopas?", "¿Es amable?", "¿Atiende con calidez?"];
+        
+        const checklistComedor = {
+            "Alimentos": ["Producción suficiente", "Temperatura de alimentos", "Menú completo"],
+            "Infraestructura": ["Higiene de pared y techo", "Higiene de lavamanos", "Interruptores funcionando", "Iluminación adecuada", "Ventilación adecuada"],
+            "Muebles": ["Estado de mesas", "Estado de sillas", "Estado de microondas"],
+            "Otros": ["Resurtido de jabón", "Limpieza del comedor", "Limpieza de área escamoche", "Resurtido gel antibacterial", "Garrafón de agua disponible", "Funcionamiento dispensador de agua"]
         };
 
-        const NUM_HABITACIONES = 3;
-        const container = document.getElementById('habitaciones-container');
+        const categoriasHabitacion = {
+            "Habitación": ["Puerta de entrada", "Tope de puerta", "Plano de evacuación", "Cadena / pasador", "Detector de humo", "Piso", "Plafón", "Paredes", "Aire Acondicionado", "Puerta comunicada"],
+            "Muebles": ["Portaequipaje y cajones", "Escritorio", "Silla", "Cabeceras", "Buró", "Cortinas"],
+            "Iluminación": ["Lámpara escritorio", "Lámpara piso", "Lámpara cabecera"],
+            "Suministros": ["Guía canales TV", "Reglamento", "Menú Room Service", "Control TV", "Candado privacidad", "Cafetera, pods y complementos"],
+            "Blancos Hab": ["Sábanas", "Almohadas", "Duvet/edredón", "Protectores colchón", "Rodapié"],
+            "Closet": ["Puerta", "Caja seguridad", "Barra ganchos", "Ganchos", "Lista Lavandería", "Bolsa Lavandería", "Plancha", "Tabla planchar"],
+            "Baño/Vanity": ["Puerta / Espejo", "Tope puerta", "Piso", "Techo y rejilla", "Luces", "Espejo Vanity", "Lavabo (apariencia)", "Llaves/tapón", "Toalleros"],
+            "Blancos Baño": ["Toallas faciales", "Toallas cuerpo entero", "Toallas mano"],
+            "Amenidades": ["Shampoo/Gel regadera", "Gel/Crema vanity", "Kit dental/peine", "Botellas agua", "Secadora"],
+            "Regadera/WC": ["Apariencia regadera", "Alcantarilla libre", "Monomando", "Tapete baño", "Cortina/puerta", "W.C. Apariencia", "W.C. Funcionamiento"],
+            "Equipos": ["Chrome Cast", "Microondas", "Frigobar"]
+        };
 
-        // Generar la interfaz de las habitaciones dinámicamente
-        function renderizarHabitaciones() {
-            let html = '';
-            for (let i = 1; i <= NUM_HABITACIONES; i++) {
-                html += `
-                <div class="bg-white p-0 rounded-lg shadow overflow-hidden border border-gray-200">
-                    <div class="posadas-blue text-white p-3 flex justify-between items-center font-bold">
-                        <span>Revisión Habitación ${i}</span>
-                        <input type="text" id="hab_${i}_numero" placeholder="# Hab" class="w-20 p-1 text-black text-sm rounded border-none text-center font-bold">
-                    </div>
-                    <div class="p-4 space-y-5">
-                `;
+        // --- 2. GENERADORES DE INTERFAZ HTML ---
 
-                for (const [categoria, items] of Object.entries(categoriasHabitacion)) {
-                    html += `<div class="border-b pb-3"><h3 class="text-sm font-bold posadas-text-gold mb-3 uppercase tracking-wide">${categoria}</h3><div class="space-y-3">`;
-                    
-                    items.forEach((item, index) => {
-                        const idCheck = `h${i}_cat${categoria.replace(/\s+/g, '')}_item${index}`;
-                        html += `
-                            <div class="flex justify-between items-center text-sm border-b border-gray-50 pb-2">
-                                <span class="text-gray-700 pr-4 leading-tight w-2/3">${item}</span>
-                                <div class="flex items-center w-1/3 justify-end">
-                                    <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-                                        <input type="checkbox" name="habitacion_${i}" id="${idCheck}" value="${item}" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
-                                        <label for="${idCheck}" class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer"></label>
-                                    </div>
-                                    <span class="estado-texto text-green-600" id="label_${idCheck}">BIEN</span>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    html += `</div></div>`;
-                }
-
-                // Cuadro de observaciones libre al final de cada habitación
-                html += `
-                    <div class="pt-2">
-                        <label class="block text-sm font-bold posadas-text-blue mb-2">Observaciones Habitación ${i}</label>
-                        <textarea id="hab_${i}_obs" rows="2" class="block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-[#002d62]" placeholder="Detalles, averías, reportes a mantenimiento..."></textarea>
-                    </div>
-                </div></div>`;
-            }
-            container.innerHTML = html;
-
-            // Escuchar cambios en los switches para cambiar color y texto
-            document.querySelectorAll('.toggle-checkbox').forEach(toggle => {
-                toggle.addEventListener('change', function() {
-                    const labelTxt = document.getElementById('label_' + this.id);
-                    if(this.checked) {
-                        labelTxt.textContent = 'NO ACEPTABLE';
-                        labelTxt.classList.replace('text-green-600', 'text-red-600');
-                    } else {
-                        labelTxt.textContent = 'BIEN';
-                        labelTxt.classList.replace('text-red-600', 'text-green-600');
-                    }
-                });
-            });
+        // Función para crear un acordeón
+        function crearAcordeon(titulo, contenidoHTML) {
+            return `
+            <details class="bg-white p-0 rounded-lg shadow border-t-4 border-[#b8974a] overflow-hidden mb-4">
+                <summary class="posadas-blue text-white p-4 font-bold cursor-pointer flex justify-between items-center">
+                    <span>${titulo}</span>
+                    <span class="text-xl leading-none">+</span>
+                </summary>
+                <div class="p-4 space-y-4">
+                    ${contenidoHTML}
+                </div>
+            </details>`;
         }
 
-        renderizarHabitaciones();
+        // Función para crear un interruptor (Toggle) Bien/Mal
+        function crearToggle(id, label, defaultText = "BIEN") {
+            return `
+            <div class="flex justify-between items-center text-sm border-b border-gray-100 pb-2">
+                <span class="text-gray-700 pr-2 leading-tight w-2/3">${label}</span>
+                <div class="flex items-center w-1/3 justify-end">
+                    <div class="relative inline-block w-10 mr-2 align-middle select-none">
+                        <input type="checkbox" id="${id}" value="${label}" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+                        <label for="${id}" class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer"></label>
+                    </div>
+                    <span class="estado-texto text-green-600" id="label_${id}">${defaultText}</span>
+                </div>
+            </div>`;
+        }
 
-        // -----------------------------------------------------------------
-        // FUNCIÓN PARA RECOLECTAR Y ENVIAR LOS DATOS
-        // -----------------------------------------------------------------
+        // Renderizar Comentarios por Depto
+        let htmlDeptos = departamentos.map((d, i) => `
+            <div>
+                <label class="block text-xs font-bold posadas-text-blue mb-1 uppercase">${d}</label>
+                <input type="text" id="depto_${i}" class="block w-full rounded border-gray-300 shadow-sm p-2 border focus:border-[#002d62]" placeholder="Comentarios...">
+            </div>
+        `).join('');
+        document.getElementById('comentarios-deptos-container').innerHTML = crearAcordeon("📝 Comentarios por Área", htmlDeptos);
+
+        // Renderizar Reporte por Áreas (Inputs de texto)
+        let htmlAreas = areas.map((a, i) => `
+            <div class="flex justify-between items-center border-b pb-2">
+                <span class="text-sm font-medium text-gray-700 w-1/2">${a}</span>
+                <input type="text" id="area_${i}" value="En orden" class="w-1/2 rounded border border-gray-300 p-1 text-sm text-center">
+            </div>
+        `).join('');
+        document.getElementById('areas-container').innerHTML = crearAcordeon("📍 Reporte de Áreas", htmlAreas);
+
+        // Renderizar Entrevistas Huéspedes
+        let htmlEntrevistas = `
+            <h3 class="font-bold text-sm posadas-text-gold">Huéspedes Llegando</h3>
+            <input type="text" id="hsp_lleg_nombre" placeholder="Nombre" class="w-full mb-2 p-2 border rounded text-sm">
+            <div class="flex gap-2 mb-2"><input type="text" id="hsp_lleg_hab" placeholder="Hab" class="w-1/3 p-2 border rounded text-sm"><input type="text" id="hsp_lleg_emp" placeholder="Empresa" class="w-2/3 p-2 border rounded text-sm"></div>
+            <textarea id="hsp_lleg_coment" placeholder="Comentarios..." class="w-full p-2 border rounded text-sm mb-4"></textarea>
+            
+            <h3 class="font-bold text-sm posadas-text-gold border-t pt-4">Huéspedes en Casa</h3>
+            <input type="text" id="hsp_casa_nombre" placeholder="Nombre" class="w-full mb-2 p-2 border rounded text-sm">
+            <div class="flex gap-2 mb-2"><input type="text" id="hsp_casa_hab" placeholder="Hab" class="w-1/3 p-2 border rounded text-sm"><input type="text" id="hsp_casa_emp" placeholder="Empresa" class="w-2/3 p-2 border rounded text-sm"></div>
+            <textarea id="hsp_casa_coment" placeholder="Comentarios..." class="w-full p-2 border rounded text-sm"></textarea>
+        `;
+        document.getElementById('entrevistas-container').innerHTML = crearAcordeon("🗣️ Entrevista a Huéspedes", htmlEntrevistas);
+
+        // Renderizar Servicio AyB
+        let htmlAyB = `<h3 class="font-bold text-sm posadas-text-blue mb-2">Servicio Platillos (Sabor/Temp/Presentación)</h3>`;
+        htmlAyB += itemsAyB.map((item, i) => crearToggle(`ayb_platillo_${i}`, item)).join('');
+        htmlAyB += `<h3 class="font-bold text-sm posadas-text-blue mt-4 mb-2">Evaluación Mesero</h3>`;
+        htmlAyB += meseroAyB.map((item, i) => crearToggle(`ayb_mesero_${i}`, item, "SÍ")).join('');
+        document.getElementById('ayb-container').innerHTML = crearAcordeon("🍽️ Servicio AyB (Restaurante)", htmlAyB);
+
+        // Renderizar Check List Comedor
+        let htmlComedor = '';
+        for (const [cat, items] of Object.entries(checklistComedor)) {
+            htmlComedor += `<h3 class="font-bold text-sm posadas-text-gold mt-3 mb-2 uppercase">${cat}</h3>`;
+            htmlComedor += items.map((item, i) => crearToggle(`comedor_${cat.replace(/\s/g,'')}_${i}`, item)).join('');
+        }
+        document.getElementById('comedor-container').innerHTML = crearAcordeon("🍴 Check List Comedor Colaboradores", htmlComedor);
+
+        // Renderizar Habitaciones
+        let htmlHabitaciones = '';
+        for (let i = 1; i <= 3; i++) {
+            htmlHabitaciones += `<div class="bg-gray-50 p-3 rounded border mb-4"><div class="flex justify-between items-center mb-3"><span class="font-bold posadas-text-blue">Habitación ${i}</span><input type="text" id="hab_${i}_numero" placeholder="# Hab" class="w-20 p-1 border rounded text-center font-bold"></div>`;
+            for (const [cat, items] of Object.entries(categoriasHabitacion)) {
+                htmlHabitaciones += `<h4 class="text-xs font-bold text-gray-500 mt-2">${cat}</h4>`;
+                htmlHabitaciones += items.map((item, j) => crearToggle(`h${i}_c${cat.replace(/\W/g,'')}_i${j}`, item)).join('');
+            }
+            htmlHabitaciones += `<textarea id="hab_${i}_obs" class="w-full mt-3 p-2 border rounded text-sm" placeholder="Observaciones de esta habitación..."></textarea></div>`;
+        }
+        document.getElementById('habitaciones-container').innerHTML = crearAcordeon("🛏️ Inspección de Habitaciones", htmlHabitaciones);
+
+        // --- 3. EVENT LISTENERS PARA LOS SWITCHES ---
+        document.addEventListener('change', function(e) {
+            if(e.target.classList.contains('toggle-checkbox')) {
+                const labelTxt = document.getElementById('label_' + e.target.id);
+                // Si es un toggle de Mesero (AyB), el texto es Sí/No
+                const isAyB = e.target.id.includes('ayb_mesero');
+                if(e.target.checked) {
+                    labelTxt.textContent = isAyB ? 'NO' : 'NO ACEPTABLE';
+                    labelTxt.classList.replace('text-green-600', 'text-red-600');
+                } else {
+                    labelTxt.textContent = isAyB ? 'SÍ' : 'BIEN';
+                    labelTxt.classList.replace('text-red-600', 'text-green-600');
+                }
+            }
+        });
+
+        // --- 4. FUNCIÓN DE ENVÍO DE DATOS ---
         function enviarDatos() {
             const btn = document.getElementById('btnEnviar');
             const msj = document.getElementById('mensaje-status');
-            
-            // Cambiar estado del botón
-            btn.innerHTML = 'Enviando... por favor espere';
-            btn.classList.add('opacity-75', 'cursor-not-allowed');
+            btn.innerHTML = 'Enviando...';
             btn.disabled = true;
 
-            // Recolectar datos básicos
+            // Recolección base
             const payload = {
                 fecha: document.getElementById('fecha').value,
                 ejecutivo: document.getElementById('ejecutivo').value,
                 comentarios_generales: document.getElementById('comentarios').value,
+                detalles_por_departamento: {},
+                reporte_areas: {},
+                entrevistas: {
+                    llegando: `Nombre: ${document.getElementById('hsp_lleg_nombre').value} | Hab: ${document.getElementById('hsp_lleg_hab').value} | Coment: ${document.getElementById('hsp_lleg_coment').value}`,
+                    en_casa: `Nombre: ${document.getElementById('hsp_casa_nombre').value} | Hab: ${document.getElementById('hsp_casa_hab').value} | Coment: ${document.getElementById('hsp_casa_coment').value}`
+                },
+                servicio_ayb: {},
+                checklist_comedor: {},
                 habitaciones: []
             };
 
-            // Recolectar Habitaciones
-            for (let i = 1; i <= NUM_HABITACIONES; i++) {
-                let habObj = {
-                    numero: document.getElementById(`hab_${i}_numero`).value || `S/N (${i})`,
-                    observaciones: document.getElementById(`hab_${i}_obs`).value,
-                    buenos: 0,
-                    malos: []
-                };
+            // Recolectar Deptos
+            departamentos.forEach((d, i) => payload.detalles_por_departamento[d] = document.getElementById(`depto_${i}`).value || "Sin comentarios");
+            
+            // Recolectar Áreas
+            areas.forEach((a, i) => payload.reporte_areas[a] = document.getElementById(`area_${i}`).value);
 
-                const checks = document.querySelectorAll(`input[name="habitacion_${i}"]`);
-                checks.forEach(chk => {
-                    if (chk.checked) {
-                        habObj.malos.push(chk.value); // checked significa "NO ACEPTABLE" en nuestro toggle
-                    } else {
-                        habObj.buenos++;
-                    }
+            // Recolectar AyB y Comedor iterando sobre los checkboxes
+            document.querySelectorAll('input[type="checkbox"]').forEach(chk => {
+                if(chk.id.startsWith('ayb')) payload.servicio_ayb[chk.value] = chk.checked ? 'No / Falla' : 'Bien / Sí';
+                if(chk.id.startsWith('comedor')) payload.checklist_comedor[chk.value] = chk.checked ? 'No Aceptable' : 'Bien';
+            });
+
+            // Recolectar Habitaciones
+            for (let i = 1; i <= 3; i++) {
+                let habObj = {
+                    numero: document.getElementById(`hab_${i}_numero`).value || `Hab ${i}`,
+                    observaciones: document.getElementById(`hab_${i}_obs`).value,
+                    buenos: 0, malos: []
+                };
+                document.querySelectorAll(`input[id^="h${i}_"]`).forEach(chk => {
+                    if (chk.checked) habObj.malos.push(chk.value);
+                    else habObj.buenos++;
                 });
                 payload.habitaciones.push(habObj);
             }
 
-            // ==============================================================
-            // ⚠️ AQUÍ DEBES PEGAR TU ENLACE DE GOOGLE APPS SCRIPT (URL DE LA APP WEB)
-            // ==============================================================
+            // ENLACE APPS SCRIPT
             const URL_APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycbzI89onRWL-Qt-c3AtIiQd07EgiviymJpj4erDrGudxvVg4AScTQFpcgeZ9RR-kugs6/exec';
 
             fetch(URL_APPS_SCRIPT, {
-                method: 'POST',
-                body: JSON.stringify(payload),
+                method: 'POST', body: JSON.stringify(payload),
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' } 
             })
-            .then(response => response.json())
+            .then(res => res.json())
             .then(data => {
-                msj.textContent = "✅ " + data.mensaje;
-                msj.classList.remove('hidden', 'text-red-600');
-                msj.classList.add('text-green-600');
-                btn.innerHTML = 'Reporte Enviado';
-                setTimeout(() => location.reload(), 3000); // Recarga para limpiar
+                msj.textContent = "✅ Reporte Enviado Correctamente";
+                msj.classList.remove('hidden'); msj.classList.add('text-green-600');
+                btn.innerHTML = '¡Éxito!';
+                setTimeout(() => location.reload(), 2500);
             })
             .catch(error => {
-                msj.textContent = "❌ Error al enviar. Intenta de nuevo.";
-                msj.classList.remove('hidden', 'text-green-600');
-                msj.classList.add('text-red-600');
-                btn.innerHTML = 'Reintentar Envío';
+                msj.textContent = "❌ Error al enviar.";
+                msj.classList.remove('hidden'); msj.classList.add('text-red-600');
+                btn.innerHTML = 'Reintentar';
                 btn.disabled = false;
-                btn.classList.remove('opacity-75', 'cursor-not-allowed');
-                console.error('Error:', error);
             });
         }
 
-        // Auto-llenar fecha de hoy
         document.getElementById('fecha').valueAsDate = new Date();
     </script>
 </body>
